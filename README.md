@@ -26,7 +26,7 @@ Beebo.io stands on the shoulders of giants. Laravel provides a best-of-class fra
 
 One such package, Laravel WebSockets published by BeyondCode, makes it possible to run a WebSocket server right inside your Laravel codebase, granting that server direct access to your Laravel application container and all the functionality inside. This means that connected clients can execute code in your application container in real-time (if they follow the rules, of course).
 
-A connected client can be virtually any kind of device: the web browser running on your laptop, a native mobile application, or a game built with Unity running on an Oculus Quest. Beebo even welcomes connections from the Internet of Things (IoT), so your refrigerator can get in the game. If a device can negotiate a WebSocket, it can talk to a Beebo network.
+A connected client can be virtually any kind of device: the web browser running on your laptop, a native mobile application, or a game built with Unity running on an Oculus Quest. Beebo even welcomes connections from the Internet of Things (IoT), so your refrigerator can get in the game. If a device can negotiate a WebSocket or trigger a webhook, it can talk to a Beebo network.
 
 On top of Laravel WebSockets, we implemented the Socket.io protocol. Without a protocol to follow, a WebSocket is little more than a way to send and receive plain text, just really fast. With the addition of a protocol, clients can send and receive encoded, structured data, binary data like images and audio, and can even call remote code and receive responses asyncronously.
 
