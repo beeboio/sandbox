@@ -43,10 +43,31 @@ trait Controllers
 
     $this->on('event', function(Event $event, ...$data) {
       try {
-        $this->tryToRouteEvent($event, ...$data);
-      } catch (ControllerHandlerNotFound $e) {
-        if (!$this->allowControllerMethodNotFound()) {
-          throw $e;
+        try {
+          $this->tryToRouteEvent($event, ...$data);
+        } catch (ControllerHandlerNotFound $e) {
+          if (!$this->allowControllerMethodNotFound()) {
+            throw $e;
+          } else {
+            Log::error($e);
+          }
+        }
+      } catch (\Exception $e) {
+        if ($event->hasCallback()) {
+          $error = [
+            'type' => get_class($e),
+            'message' => $e->getMessage(),
+            'code' => $e->getCode(),
+          ];
+
+          $event->callback([
+            'errors' => [$error],
+          ]);
+
+          // TODO: use ExceptionHandler, maybe?
+          if (config('app.debug')) {
+            Log::error($e);
+          }
         } else {
           Log::error($e);
         }

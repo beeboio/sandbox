@@ -1,13 +1,20 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Beebo\Concerns\Bootable;
+use Beebo\Concerns\Unique;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-class Room
+class Room implements Arrayable
 {
+  use Bootable, Unique;
+
   protected $name;
 
   protected $server;
+
+  protected $id;
 
   /**
    * @var Collection<Socket>
@@ -19,6 +26,20 @@ class Room
     // TODO: setup interval to check room membership and dispose
 
     $this->sockets = collect([]);
+
+    $this->bootIfNotBooted();
+
+    $this->initializeTraits();
+
+    $this->id = self::makeId();
+  }
+
+  /**
+   * @return string
+   */
+  public function getId()
+  {
+    return $this->id;
   }
 
   /**
@@ -78,4 +99,26 @@ class Room
     $socket->handleLeave($this);
     return $this;
   }
+
+  /**
+   * @return string
+   */
+  public function __toString()
+  {
+    return "{$this->getName()}#{$this->getId()}";
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray()
+  {
+    return [
+      'id' => $this->getId(),
+      'name' => $this->getName(),
+      'type' => get_class($this),
+    ];
+  }
+
+
 }

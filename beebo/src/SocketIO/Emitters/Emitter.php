@@ -35,12 +35,13 @@ abstract class Emitter
 
   /**
    * @param Room|string The room or room name
+   * @param string|null Room class
    * @return Room
    */
-  function getRoom($room)
+  function getRoom($room, $roomClass = null)
   {
     if (!$room instanceof Room) {
-      $room = $this->getServer()->makeRoom($roomName = $room);
+      $room = $this->getServer()->makeRoom($roomName = $room, $roomClass);
     }
     return $room;
   }
@@ -53,9 +54,14 @@ abstract class Emitter
     return $this->isFromSocket() ? $this->from->getServer() : $this->from;
   }
 
-  function makeRoom($roomName)
+  /**
+   * @param $roomName
+   * @param null $roomClass
+   * @throws \Exception
+   */
+  function makeRoom($roomName, $roomClass = null)
   {
-    $this->getServer()->makeRoom($roomName);
+    $this->getServer()->makeRoom($roomName, $roomClass);
   }
 
   function send(...$messageData)

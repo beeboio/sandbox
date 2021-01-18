@@ -4,6 +4,7 @@ namespace App\Sockets\Servers;
 use App\Events\LightsTurnedOff;
 use App\Events\LightsTurnedOn;
 use App\Sockets\Controllers\ButtonController;
+use App\Sockets\Controllers\TicTacToeController;
 use Beebo\SocketIO\Event;
 use Beebo\SocketIO\Server;
 use Beebo\SocketIO\Socket;
@@ -19,12 +20,14 @@ class Examples extends Server
   protected $controllers = [
     ButtonController::class,
     ChatController::class,
+    TicTacToeController::class,
   ];
 
   const VERSION = '1.0.0';
 
   public function onInitialize()
   {
+    /*
     $this->network->on('connect', function() {
       // subscribe to some event on the bus
       $this->subscribe('lights')
@@ -35,6 +38,7 @@ class Examples extends Server
           $this->in('examples')->send('The lights are off!');
         });
     });
+    */
   }
 
   public function onConnection(Socket $socket)
@@ -42,6 +46,8 @@ class Examples extends Server
     // when sockets join, join the "chat" room
     $socket->join('examples')
       ->send('Welcome to the Examples Server!');
+
+    /*
 
     // These are example event handlers.
     // They are duplicated by the ChatController.
@@ -60,5 +66,7 @@ class Examples extends Server
         'laravel' => Laravel::VERSION,
       ]);
     });
+
+    */
   }
 }

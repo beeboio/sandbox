@@ -2,7 +2,6 @@
 namespace Beebo\SocketIO;
 
 use Beebo\Exceptions\SocketNoLongerConnected;
-use Beebo\SocketIO\Emitters\Emitter;
 use Beebo\SocketIO\Emitters\In;
 use Beebo\SocketIO\Emitters\To;
 use Beebo\Concerns\Listens;
@@ -71,7 +70,7 @@ class Server implements MessageComponentInterface
   /**
    * @var string
    */
-  static protected $roomClass = Room::class;
+  static protected $defaultRoomClass = Room::class;
 
   /**
    * @var Collection<Room>
@@ -266,14 +265,36 @@ class Server implements MessageComponentInterface
   }
 
   /**
+   * @param Room|string $roomName
+   * @param string|null $roomClass
    * @return Room
-   * @throws \Exception;
+   * @throws \InvalidArgumentException If the given class does not inherit from Beebo\SocketIO\Room
    */
-  public final function makeRoom($roomName)
+  public final function makeRoom($roomName, $roomClass = null)
   {
-    if (!$this->rooms->has($roomName)) {
-      $this->rooms[$roomName] = Room::make(static::$roomClass, $roomName, $this);
+    if ($roomName instanceof Room) {
+      $room = $roomName;
+      $roomName = $room->getName();
+      if (!is_null($roomClass) && !$room instanceof $roomClass) {
+        throw new \InvalidArgumentException("Room [{$roomName}] already exists, but it is not an instance of " . $roomClass);
+      }
+      return $room;
+    } else if (!is_string($roomName)) {
+      throw new \InvalidArgumentException("Argument #1 must be either a string or an instance of Beebo\SocketIO\Room");
     }
+
+    if (is_null($roomClass)) {
+      $roomClass = self::$defaultRoomClass;
+    }
+
+    if ($roomClass !== Room::class && !is_subclass_of($roomClass, Room::class)) {
+      throw new \InvalidArgumentException("Class [{$roomClass}] must be a subclass of " . Room::class);
+    }
+
+    if (!$this->hasRoom($roomName)) {
+      $this->rooms[$roomName] = Room::make($roomClass, $roomName, $this);
+    }
+
     return $this->rooms[$roomName];
   }
 
@@ -321,14 +342,62 @@ class Server implements MessageComponentInterface
     $this->sockets->each->send(Packet::event($eventName, ...$data));
   }
 
-  public final function join(Socket $socket, $roomName)
+  /**
+   * @param Socket $socket
+   * @param Room|string $roomName
+   * @param null $roomClass
+   * @return Room
+   */
+  public final function join(Socket $socket, $roomName, $roomClass = null)
   {
-    $this->makeRoom($roomName)->join($socket);
+    return $this->makeRoom($roomName, $roomClass)->join($socket);
   }
 
+  /**
+   * @param Socket $socket
+   * @param Room|string $roomName
+   * @return Room|null
+   */
   public final function leave(Socket $socket, $roomName)
   {
-    $this->makeRoom($roomName)->leave($socket);
+    if ($this->hasRoom($roomName)) {
+      $this->rooms[$roomName]->leave($socket);
+      return $this->rooms[$roomName];
+    }
+    return null;
+  }
+
+  /**
+   * @param Room|string $roomName
+   * @param string|null $roomClass
+   * @return bool
+   */
+  public final function hasRoom($roomName, $roomClass = null)
+  {
+    if ($roomName instanceof Room) {
+      $room = $roomName;
+      $roomName = $room->getName();
+    }
+
+    if ($this->rooms->has($roomName)) {
+      if (!is_null($roomClass)) {
+        if ($this->rooms[$roomName] instanceof $roomClass) {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * @param \Closure|null $filter
+   * @return Collection
+   */
+  public function rooms($filter = null)
+  {
+    return $filter ? $this->rooms->filter($filter) : $this->rooms;
   }
 
 }

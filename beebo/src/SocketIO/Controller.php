@@ -1,6 +1,7 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Beebo\Concerns\Bootable;
 use Beebo\Contracts\ControlsSockets;
 use Beebo\Concerns\Sockets;
 
@@ -11,5 +12,11 @@ use Beebo\Concerns\Sockets;
  */
 abstract class Controller implements ControlsSockets
 {
-  use Sockets;
+  use Bootable, Sockets;
+
+  public function __construct()
+  {
+    $this->bootIfNotBooted();
+    $this->initializeTraits();
+  }
 }

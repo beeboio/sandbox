@@ -7,6 +7,7 @@ import router from '@/router'
 import { mapActions, mapGetters } from 'vuex'
 import socket from '@/io'
 
+// for debugging
 window.socket = socket
 
 new Vue({

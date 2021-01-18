@@ -1,6 +1,7 @@
 import Home from '@/views/Home'
 
 import Button from '@/views/examples/Button'
+import TicTacToe from '@/views/examples/TicTacToe'
 
 export default [
   {
@@ -12,6 +13,11 @@ export default [
     path: '/examples/button',
     name: 'examples.button',
     component: Button
+  },
+  {
+    path: '/examples/tictactoe',
+    name: 'examples.tictactoe',
+    componet: TicTacToe
   }
 ]
 

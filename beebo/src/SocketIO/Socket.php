@@ -1,6 +1,7 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Beebo\Rooms\Personal;
 use Illuminate\Validation\ValidationException;
 use Validator;
 use Beebo\Exceptions\ConnectionException;
@@ -103,12 +104,13 @@ class Socket
 
 
   /**
-   * @param $roomName
+   * @param string $roomName
+   * @param string|null $roomClass
    * @return $this
    */
-  function join($roomName)
+  function join($roomName, $roomClass = null)
   {
-    $this->getServer()->join($this, $roomName);
+    $this->getServer()->join($this, $roomName, $roomClass);
     return $this;
   }
 
@@ -234,7 +236,7 @@ class Socket
         ->withPacket($packet);
     }
 
-    $this->join($this->getId())->transmit(
+    $this->join($this->getId(), Personal::class)->transmit(
       Packet::connect($this->getId(), value(function() {
         $debug = null;
         if (config('app.debug')) {
