@@ -36,6 +36,23 @@ return [
         ],
     ],
 
+
+    /**
+     * PubSub module options
+     */
+    'pubsub' => [
+      'host' => env('BEEBO_PUBSUB_HOST'),
+      'key' => env('BEEBO_PUBSUB_APP_KEY', env('PUSHER_APP_KEY')),
+      'secret' => env('BEEBO_PUBSUB_APP_SECRET', env('PUSHER_APP_SECRET')),
+      'port' => env('BEEBO_PUBSUB_PORT'),
+      'options' => [
+        'dns' => env('BEEBO_PUBSUB_DNS', '127.0.0.1'),
+        'tls' => [
+          'verify_peer' => env('BEEBO_PUBSUB_TLS_VERIFY_PEER', true),
+        ],
+      ]
+    ],
+
     /*
      * This class is responsible for finding the apps. The default provider
      * will use the apps defined in this config file.

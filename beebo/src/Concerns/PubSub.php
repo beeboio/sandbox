@@ -7,6 +7,8 @@ use React\Socket\Connector as Socket;
 use Ratchet\Client\Connector as Client;
 use Ratchet\Client\WebSocket as Connection;
 use Beebo\Pusher\Socket as Pusher;
+use Spatie\Url\Url;
+use Illuminate\Support\Facades\URL as Routes;
 
 /**
  * Adding the PubSub trait to a Server creates a Bus from which
@@ -33,20 +35,39 @@ trait PubSub
       throw new \Exception("This Trait can only be applied to a Beebo\SocketIO\Server.");
     }
 
-    // TODO: make this configurable
-    $options = [
-      'dns' => '127.0.0.1',
-      'tls' => [
-        'verify_peer' => false,
-      ]
-    ];
+    if (!$options = config('websockets.pubsub.options')) {
+      throw new \Exception("Missing PubSub configuration: websockets.pubsub.options");
+    }
 
-    // TODO: make this configurable
-    $url = 'wss://box.beebo.test:6001/app/box.beebo?protocol=7&client=js&version=7.0.2&flash=false';
+    if (!$appKey = config('websockets.pubsub.key')) {
+      throw new \Exception("Missing PubSub configuration: websockets.pubsub.key");
+    }
+
+    // TODO: stash the secret, for authorizing channels
+
+    if (!$host = config('websockets.pubsub.host')) {
+      $host = Url::fromString(Routes::to('/'))->getHost();
+    }
+
+    if (!$port = config('websockets.pubsub.port')) {
+      $port = config('websockets.dashboard.port');
+    }
+
+    $pubSubUrl = (new Url())
+      ->withScheme('https')
+      ->withHost($host)
+      ->withPath("/app/{$appKey}")
+      ->withPort($port)
+      ->withQuery(http_build_query([
+        'protocol' => 7,
+        'client' => 'js',
+        'version' => '7.0.2',
+        'flash' => 'false',
+      ]));
 
     $client = new Client(Server::loop(), new Socket(Server::loop(), $options));
 
-    $client($url)
+    $client(str_replace('https://', 'wss://', (string) $pubSubUrl))
       ->then(function(Connection $conn) {
         $this->network->setConnection($conn);
       }, function(\Exception $e){
