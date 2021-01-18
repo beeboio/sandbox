@@ -3,6 +3,7 @@ namespace App\Sockets\Servers;
 
 use App\Events\LightsTurnedOff;
 use App\Events\LightsTurnedOn;
+use App\Sockets\Controllers\ButtonController;
 use Beebo\SocketIO\Event;
 use Beebo\SocketIO\Server;
 use Beebo\SocketIO\Socket;
@@ -11,11 +12,12 @@ use Beebo\Concerns\Controllers;
 use Beebo\Concerns\PubSub;
 use Illuminate\Foundation\Application as Laravel;
 
-class Chat extends Server
+class Examples extends Server
 {
   use Controllers, PubSub;
 
   protected $controllers = [
+    ButtonController::class,
     ChatController::class,
   ];
 
@@ -27,10 +29,10 @@ class Chat extends Server
       // subscribe to some event on the bus
       $this->subscribe('lights')
         ->on(LightsTurnedOn::class, function () {
-          $this->in('chat')->send('The lights are on!');
+          $this->in('examples')->send('The lights are on!');
         })
         ->on(LightsTurnedOff::class, function () {
-          $this->in('chat')->send('The lights are off!');
+          $this->in('examples')->send('The lights are off!');
         });
     });
   }
@@ -38,8 +40,8 @@ class Chat extends Server
   public function onConnection(Socket $socket)
   {
     // when sockets join, join the "chat" room
-    $socket->join('chat')
-      ->send('Welcome to the Chat Server!');
+    $socket->join('examples')
+      ->send('Welcome to the Examples Server!');
 
     // These are example event handlers.
     // They are duplicated by the ChatController.
@@ -48,7 +50,7 @@ class Chat extends Server
 
     // simple chat message echo
     $socket->on('message', function(Event $request, $message) {
-      $request->socket->to('chat')->send($message);
+      $request->socket->to('examples')->send($message);
     });
 
     // simple RPC example

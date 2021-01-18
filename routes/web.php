@@ -18,4 +18,4 @@ Route::get('/', function () {
     return view('index');
 });
 
-Socket::route('/app/chat', \App\Sockets\Servers\Chat::class);
+Socket::route('/app/examples', \App\Sockets\Servers\Examples::class);
