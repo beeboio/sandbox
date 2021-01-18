@@ -1,10 +1,11 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
-class Packet {
+class Packet implements Arrayable {
 
   const TYPE_CONNECT = 0;
   const TYPE_DISCONNECT = 1;
@@ -429,6 +430,21 @@ class Packet {
         'data' => (object) ($data ?? []),
       ]
     );
+  }
+
+  /**
+   * Create a JSON-P response packet.
+   * @param $j
+   * @return string
+   */
+  function toJSONP($j)
+  {
+    return sprintf('___eio[%d](%s)', $j, json_encode($this->toArray()));
+  }
+
+  public function toArray()
+  {
+
   }
 
   /**

@@ -7,8 +7,8 @@ use Beebo\SocketIO\Event;
 use Beebo\SocketIO\Server;
 use Beebo\SocketIO\Socket;
 use App\Sockets\Controllers\ChatController;
-use Beebo\Traits\Controllers;
-use Beebo\Traits\PubSub;
+use Beebo\Concerns\Controllers;
+use Beebo\Concerns\PubSub;
 use Illuminate\Foundation\Application as Laravel;
 
 class Chat extends Server

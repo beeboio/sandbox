@@ -2,7 +2,7 @@
 namespace Beebo\SocketIO;
 
 use Beebo\Contracts\ControlsSockets;
-use Beebo\Traits\Sockets;
+use Beebo\Concerns\Sockets;
 
 /**
  * Basic Controller, if you need to create a new one from scratch.

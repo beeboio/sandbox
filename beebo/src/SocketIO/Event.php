@@ -1,7 +1,7 @@
 <?php
 namespace Beebo\SocketIO;
 
-use Beebo\Traits\Unique;
+use Beebo\Concerns\Unique;
 use Illuminate\Support\Arr;
 
 /**

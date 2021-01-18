@@ -1,5 +1,5 @@
 <?php
-namespace Beebo\Traits;
+namespace Beebo\Concerns;
 
 use Beebo\Collections\Listeners as ListenersCollection;
 use Beebo\EventHandler;

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
+use Beebo\SocketIO\Socket;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,4 +18,4 @@ Route::get('/', function () {
     return view('index');
 });
 
-WebSocketsRouter::webSocket('/chat/', \App\Sockets\Servers\Chat::class);
+Socket::route('/chat', \App\Sockets\Servers\Chat::class);

@@ -1,7 +1,7 @@
 <?php
 namespace Beebo;
 
-use Beebo\Traits\Unique;
+use Beebo\Concerns\Unique;
 
 class EventHandler
 {

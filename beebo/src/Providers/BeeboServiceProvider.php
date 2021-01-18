@@ -16,7 +16,7 @@ class BeeboServiceProvider extends ServiceProvider
 
   public function boot()
   {
-    //
+
   }
 
 }

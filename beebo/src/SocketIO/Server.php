@@ -1,13 +1,17 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Beebo\Exceptions\SocketNoLongerConnected;
 use Beebo\SocketIO\Emitters\In;
 use Beebo\SocketIO\Emitters\To;
-use Beebo\Traits\Listens;
-use Beebo\Traits\Bootable;
-use Beebo\Traits\Timers;
+use Beebo\Concerns\Listens;
+use Beebo\Concerns\Bootable;
+use Beebo\Concerns\Timers;
 use BeyondCode\LaravelWebSockets\Apps\App;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use Ratchet\WebSocket\MessageComponentInterface;
@@ -105,6 +109,12 @@ class Server implements MessageComponentInterface
   public function onFailure(Socket $socket, \Exception $e) {}
 
   /**
+   * @param Request $request
+   * @return Response
+   */
+  public function onPoll(Request $request) {}
+
+  /**
    * @return int|float Ping timeout in seconds
    */
   public final function getPingTimeout()
@@ -171,7 +181,7 @@ class Server implements MessageComponentInterface
       $socket = $this->sockets[$this->getSid($conn)] ?? null;
 
       if (!$socket) {
-        throw new \Exception("Connection failure: socket [{$sid}] is no longer attached");
+        throw new SocketNoLongerConnected($sid);
       }
     }
 
@@ -235,8 +245,13 @@ class Server implements MessageComponentInterface
    */
   public final function onError(ConnectionInterface $conn, \Exception $e)
   {
-    $socket = $this->socket($conn)->handleError($e);
-    $this->onFailure($socket, $e);
+    try {
+      $this->onFailure($this->socket($conn)->handleError($e), $e);
+    } catch (SocketNoLongerConnected $e) {
+      // this can happen if an Exception is thrown onOpen()
+      Log::error($e);
+      $conn->close();
+    }
   }
 
   /**

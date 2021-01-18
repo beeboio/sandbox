@@ -3,10 +3,10 @@ namespace Beebo\Pusher;
 
 use Beebo\Contracts\Listener;
 use Beebo\SocketIO\Server;
-use Beebo\Traits\Bootable;
-use Beebo\Traits\Listens;
-use Beebo\Traits\PingPong;
-use Beebo\Traits\Timers;
+use Beebo\Concerns\Bootable;
+use Beebo\Concerns\Listens;
+use Beebo\Concerns\PingPong;
+use Beebo\Concerns\Timers;
 use Ratchet\Client\WebSocket as Connection;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 

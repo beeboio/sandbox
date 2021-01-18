@@ -2,8 +2,8 @@
 namespace Beebo;
 
 use Beebo\Contracts\Listener;
-use Beebo\Traits\Bootable;
-use Beebo\Traits\Listens;
+use Beebo\Concerns\Bootable;
+use Beebo\Concerns\Listens;
 
 /**
  * A BufferedListener can be used in place of some other Listener implementation

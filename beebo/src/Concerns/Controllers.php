@@ -1,5 +1,5 @@
 <?php
-namespace Beebo\Traits;
+namespace Beebo\Concerns;
 
 use Log;
 use Beebo\Contracts\ControlsSockets;

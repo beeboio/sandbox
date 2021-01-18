@@ -1,5 +1,5 @@
 <?php
-namespace Beebo\Traits;
+namespace Beebo\Concerns;
 
 /**
  * Borrowed from \Illuminate\Database\Eloquent\Model, this trait allows

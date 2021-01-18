@@ -1,5 +1,5 @@
 <?php
-namespace Beebo\Traits;
+namespace Beebo\Concerns;
 
 use Beebo\SocketIO\Server;
 use Illuminate\Support\Facades\Log;

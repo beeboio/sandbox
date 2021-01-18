@@ -1,19 +1,25 @@
 <?php
 namespace Beebo\SocketIO;
 
+use Illuminate\Validation\ValidationException;
+use Validator;
 use Beebo\Exceptions\ConnectionException;
 use Beebo\Exceptions\PacketTypeInvalid;
 use Beebo\SocketIO\Emitters\To;
-use Beebo\Traits\Timers;
-use Beebo\Traits\PingPong;
-use Beebo\Traits\Unique;
+use Beebo\Concerns\Timers;
+use Beebo\Concerns\PingPong;
+use Beebo\Concerns\Unique;
 use Beebo\WebSocketApp;
-use Beebo\Traits\Listens;
-use Beebo\Traits\Bootable;
+use Beebo\Concerns\Listens;
+use Beebo\Concerns\Bootable;
+use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
 use BeyondCode\LaravelWebSockets\QueryParameters;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Ratchet\ConnectionInterface;
 use Ratchet\RFC6455\Messaging\MessageInterface;
+use Illuminate\Support\Facades\Route as WebRouter;
 
 /**
  * SocketIO server API
@@ -530,6 +536,46 @@ class Socket
   {
     $this->getConnection()->send($encodedPacket);
     return $this;
+  }
+
+  /**
+   * @param $uri
+   * @param $serverClass
+   * @throws \Exception
+   */
+  static function route($uri, $serverClass)
+  {
+    if (!is_subclass_of($serverClass, Server::class)) {
+      throw new \Exception("Class [{$serverClass}] must be a subclass of " . Server::class);
+    }
+
+    /**
+     * Polling requests
+     */
+    WebRouter::get($uri, function(Request $request) use ($uri, $serverClass) {
+
+      // validate the polling request
+      $validator = Validator::make($request->all(), [
+        'appKey' => 'required|string',
+        'EIO' => 'required|numeric',
+        'transport' => 'required|in:polling',
+        't' => 'required',
+        'j' => 'sometimes|string|nullable',
+      ]);
+
+      if ($validator->failed()) {
+        throw new ValidationException($validator);
+      }
+
+      return (new $serverClass)->onPoll($request);
+    });
+
+    // must add suffixing "/" for the UrlRouter in ReactPHP
+    if (!Str::endsWith($uri, '/')) {
+      $uri .= '/';
+    }
+
+    return WebSocketsRouter::webSocket($uri, $serverClass);
   }
 
 }
