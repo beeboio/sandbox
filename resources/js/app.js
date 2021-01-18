@@ -7,8 +7,8 @@ import router from '@/router'
 import { mapActions, mapGetters } from 'vuex'
 import io from 'socket.io-client'
 
-window.socket = io(':' + process.env.MIX_LARAVEL_WEBSOCKETS_PORT, {
-  path: '/chat',
+const socket = io(':' + process.env.MIX_LARAVEL_WEBSOCKETS_PORT, {
+  path: '/app/chat',
   query: {
     appKey: process.env.MIX_PUSHER_APP_KEY
   },
@@ -16,6 +16,9 @@ window.socket = io(':' + process.env.MIX_LARAVEL_WEBSOCKETS_PORT, {
 }).on('message', (data) => {
   console.log(data)
 })
+
+// for fun
+window.socket = socket
 
 new Vue({
   components: {
@@ -29,14 +32,25 @@ new Vue({
       'user'
     ])
   },
+  data () {
+    return {
+      i: 0
+    }
+  },
   mounted () {
-    // this.startSession()
+    // anytime state is changed, update
+    socket.on('Chat.state', (i) => this.i = i)
+    // load the current state
+    socket.emit('Chat.getState', (i) => this.i = i)
   },
   methods: {
     ...mapActions('auth', [
       'showAuthModal',
       'startSession',
       'logout'
-    ])
+    ]),
+    increment () {
+      socket.emit('Chat.increment')
+    }
   }
 })

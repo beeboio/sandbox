@@ -1,6 +1,7 @@
 <?php
 namespace Beebo\Concerns;
 
+use Beebo\SocketIO\Emitters\In;
 use Beebo\SocketIO\Server;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -77,5 +78,15 @@ trait Sockets
     }
     return $this->_methods;
   }
+
+  /**
+   * @param string $roomName
+   * @return In
+   */
+  function in($roomName)
+  {
+    return $this->_server->in($roomName);
+  }
+
 
 }

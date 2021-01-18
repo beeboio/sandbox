@@ -13,6 +13,10 @@ use Beebo\SocketIO\Socket;
  */
 class In extends Emitter
 {
+  /**
+   * @param $from
+   * @return In
+   */
   static function make($from)
   {
     $emitter = new self;
@@ -20,6 +24,10 @@ class In extends Emitter
     return $emitter;
   }
 
+  /**
+   * @param $room
+   * @return $this
+   */
   function in($room)
   {
     $room = $this->getRoom($room);
@@ -27,6 +35,11 @@ class In extends Emitter
     return $this;
   }
 
+  /**
+   * @param $eventName
+   * @param mixed ...$data
+   * @return $this
+   */
   function emit($eventName, ...$data)
   {
     if (count($this->rooms)) {

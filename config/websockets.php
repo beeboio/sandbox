@@ -41,16 +41,17 @@ return [
      * PubSub module options
      */
     'pubsub' => [
-      'host' => env('BEEBO_PUBSUB_HOST'),
-      'key' => env('BEEBO_PUBSUB_APP_KEY', env('PUSHER_APP_KEY')),
-      'secret' => env('BEEBO_PUBSUB_APP_SECRET', env('PUSHER_APP_SECRET')),
-      'port' => env('BEEBO_PUBSUB_PORT'),
-      'options' => [
-        'dns' => env('BEEBO_PUBSUB_DNS', '127.0.0.1'),
-        'tls' => [
-          'verify_peer' => env('BEEBO_PUBSUB_TLS_VERIFY_PEER', true),
-        ],
-      ]
+        'host' => env('BEEBO_PUBSUB_HOST'),
+        'key' => env('BEEBO_PUBSUB_KEY', env('PUSHER_APP_KEY')),
+        'secret' => env('BEEBO_PUBSUB_SECRET', env('PUSHER_APP_SECRET')),
+        'path' => env('BEEBO_PUBSUB_PATH', env('PUSHER_APP_PATH')),
+        'port' => env('BEEBO_PUBSUB_PORT'),
+        'options' => [
+            'dns' => env('BEEBO_PUBSUB_DNS', '127.0.0.1'),
+            'tls' => [
+                'verify_peer' => env('BEEBO_PUBSUB_TLS_VERIFY_PEER', true),
+            ],
+        ]
     ],
 
     /*

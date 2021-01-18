@@ -10,6 +10,7 @@ class BeeboServiceProvider extends ServiceProvider
   public function register()
   {
     $this->commands([
+      Commands\Restart::class,
       Commands\Serve::class,
     ]);
   }

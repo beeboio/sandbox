@@ -9,7 +9,6 @@ Vue.use(BootstrapVue)
 
 window.Pusher = require('pusher-js');
 
-/*
 window.Echo = new Echo({
   broadcaster: 'pusher',
   key: process.env.MIX_PUSHER_APP_KEY,
@@ -20,5 +19,5 @@ window.Echo = new Echo({
   forceTLS: false,
   encrypted: true,
   disableStats: true,
+  enabledTransports: ['ws', 'wss']
 });
- */

@@ -21,4 +21,16 @@ class ChatController extends Controller implements Messenger
       'laravel' => Laravel::VERSION,
     ];
   }
+
+  protected $i = 0;
+
+  function getState()
+  {
+    return $this->i;
+  }
+
+  function increment(Event $request)
+  {
+    $this->in('chat')->emit('Chat.state', ++$this->i);
+  }
 }

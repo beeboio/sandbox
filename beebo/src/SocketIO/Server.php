@@ -2,6 +2,7 @@
 namespace Beebo\SocketIO;
 
 use Beebo\Exceptions\SocketNoLongerConnected;
+use Beebo\SocketIO\Emitters\Emitter;
 use Beebo\SocketIO\Emitters\In;
 use Beebo\SocketIO\Emitters\To;
 use Beebo\Concerns\Listens;
@@ -294,7 +295,7 @@ class Server implements MessageComponentInterface
   /**
    * Send an event to every Socket in the room
    * @param Room|string $room
-   * @return $this
+   * @return In
    */
   public final function in($room)
   {
