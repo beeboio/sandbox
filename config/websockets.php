@@ -67,7 +67,7 @@ return [
      * Leave this empty if you want to accept requests from all hosts.
      */
     'allowed_origins' => [
-        'box.beebo.test',
+        //
     ],
 
     /*
