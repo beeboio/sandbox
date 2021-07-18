@@ -17,7 +17,7 @@ export default [
   {
     path: '/examples/tictactoe',
     name: 'examples.tictactoe',
-    componet: TicTacToe
+    component: TicTacToe
   }
 ]
 

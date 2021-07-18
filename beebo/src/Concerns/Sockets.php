@@ -1,11 +1,7 @@
 <?php
 namespace Beebo\Concerns;
 
-use Beebo\Exceptions\RoomDoesNotExistException;
-use Beebo\SocketIO\Emitters\In;
-use Beebo\SocketIO\Room;
 use Beebo\SocketIO\Server;
-use Beebo\SocketIO\Socket;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -75,69 +71,14 @@ trait Sockets
     if (is_null($this->_methods)) {
       $reflection = new \ReflectionClass($this);
       $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-      $this->_methods = collect($methods)->map(function(\ReflectionMethod $method) {
-        return $method->getName();
-      });
+      $this->_methods = collect($methods)->mapToAssoc(function(\ReflectionMethod $method) {
+        if (!Str::startsWith($method->getName(), '_')) {
+          return [$method->getName(), $method];
+        }
+        return null;
+      })->filter();
     }
     return $this->_methods;
-  }
-
-  /**
-   * @param string $roomName
-   * @return In
-   */
-  function in($roomName)
-  {
-    return $this->_getServer()->in($roomName);
-  }
-
-  /**
-   * @param string $roomName
-   * @param string|null $roomClass
-   * @return \Beebo\SocketIO\Room
-   * @throws \InvalidArgumentException
-   */
-  function makeRoom($roomName, $roomClass = null)
-  {
-    return $this->_getServer()->makeRoom($roomName, $roomClass = null);
-  }
-
-  /**
-   * @param Socket $socket
-   * @param $roomName
-   * @param null $roomClass
-   * @return \Beebo\SocketIO\Room
-   */
-  function makeAndJoinRoom(Socket $socket, $roomName, $roomClass = null)
-  {
-    $room = $this->makeRoom($roomName, $roomClass);
-    $this->_getServer()->join($socket, $room);
-    return $room;
-  }
-
-  /**
-   * @param Room|string $roomName
-   * @param null $roomClass
-   * @return Room
-   * @throws RoomDoesNotExistException
-   */
-  function join(Socket $socket, $roomName, $roomClass = null)
-  {
-    if ($this->_getServer()->hasRoom($roomName, $roomClass)) {
-      return $this->_getServer()->join($socket, $roomName, $roomClass);
-    }
-
-    throw new RoomDoesNotExistException($roomName, $roomClass);
-  }
-
-  /**
-   * @param Socket $socket
-   * @param Room|string $roomName
-   * @return Room
-   */
-  function leave(Socket $socket, $roomName)
-  {
-    return $this->_getServer()->leave($socket, $roomName);
   }
 
 }

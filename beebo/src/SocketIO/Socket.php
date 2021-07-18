@@ -1,9 +1,9 @@
 <?php
 namespace Beebo\SocketIO;
 
-use Beebo\Rooms\Personal;
-use Illuminate\Validation\ValidationException;
 use Validator;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Validation\ValidationException;
 use Beebo\Exceptions\ConnectionException;
 use Beebo\Exceptions\PacketTypeInvalid;
 use Beebo\SocketIO\Emitters\To;
@@ -125,14 +125,6 @@ class Socket
   }
 
   /**
-   * @param $listener
-   */
-  function offAny($listener)
-  {
-    return $this->off(Listener::make($listener, null));
-  }
-
-  /**
    * Close the socket connection.
    */
   public function close()
@@ -207,6 +199,15 @@ class Socket
   }
 
   /**
+   * @return Authenticatable
+   */
+  function user()
+  {
+    $userClass = $this->getServer()->getUserClass();
+    return new $userClass;
+  }
+
+  /**
    * @return Socket
    */
   public function handleOpen()
@@ -236,17 +237,18 @@ class Socket
         ->withPacket($packet);
     }
 
-    $this->join($this->getId(), Personal::class)->transmit(
-      Packet::connect($this->getId(), value(function() {
-        $debug = null;
-        if (config('app.debug')) {
-          $debug = [
-            'm' => memory_get_usage(),
-          ];
-        }
-        return $debug;
-      }))
-    );
+    $this->join($this->getId(), $this->getServer()->getSocketRoomClass())
+      ->transmit(
+        Packet::connect($this->getId(), value(function() {
+          $debug = null;
+          if (config('app.debug')) {
+            $debug = [
+              'm' => memory_get_usage(),
+            ];
+          }
+          return $debug;
+        }))
+      );
 
     // keep alive
     $this->every(

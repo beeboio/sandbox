@@ -2,6 +2,7 @@
 namespace Beebo\SocketIO;
 
 use Beebo\Exceptions\SocketNoLongerConnected;
+use Beebo\Rooms\SocketRoom;
 use Beebo\SocketIO\Emitters\In;
 use Beebo\SocketIO\Emitters\To;
 use Beebo\Concerns\Listens;
@@ -34,11 +35,12 @@ class Server implements MessageComponentInterface
   /**
    * RFC6455 states that during handshaking, this guid needs
    * to be sha1-hashed with the key sent in the Sec-WebSocket-Key
-   * header. My guess is that because I'm only using websocket
+   * header. My guess is that because I'm only using WebSocket
    * transport (not polling), this step is being skipped. Either
-   * way, it doesn't seem to be necessary ATM.
+   * way, it doesn't seem to be necessary ATM. Noting it here
+   * in case I need it.
    */
-  const WEBSOCKET_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+  const RFC6455_WEBSOCKET_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
   /**
    * @var float|int Ping timeout, in seconds
@@ -73,6 +75,16 @@ class Server implements MessageComponentInterface
   static protected $defaultRoomClass = Room::class;
 
   /**
+   * @var string
+   */
+  static protected $socketRoomClass = SocketRoom::class;
+
+  /**
+   * @var string
+   */
+  static protected $userClass;
+
+  /**
    * @var Collection<Room>
    */
   protected $rooms;
@@ -82,6 +94,10 @@ class Server implements MessageComponentInterface
    */
   public final function __construct()
   {
+    if (!isset(static::$userClass)) {
+      static::$userClass = 'App\Models\User';
+    }
+
     $this->sockets = collect([]);
 
     $this->rooms = collect([]);
@@ -186,6 +202,24 @@ class Server implements MessageComponentInterface
     }
 
     return $socket;
+  }
+
+  /**
+   * @return string
+   */
+  public final function getSocketRoomClass()
+  {
+    return static::$socketRoomClass ?: $this->getDefaultRoomClass();
+  }
+
+  public final function getDefaultRoomClass()
+  {
+    return static::$defaultRoomClass;
+  }
+
+  public final function getUserClass()
+  {
+    return static::$userClass;
   }
 
   /**

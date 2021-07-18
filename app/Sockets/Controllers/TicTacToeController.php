@@ -1,54 +1,40 @@
 <?php
 namespace App\Sockets\Controllers;
 
-use Beebo\Concerns\Unique;
+use App\Models\User;
+use App\Sockets\Rooms\TicTacToe;
+use Beebo\Concerns\Rooms;
+use Beebo\Exceptions\AssertionException;
 use Beebo\SocketIO\Controller;
 use Beebo\SocketIO\Event;
 
 class TicTacToeController extends Controller
 {
-  use Unique;
+  use Rooms;
+
+  protected $roomClass = TicTacToe::class;
 
   /**
-   * @return string
-   * @throws \Exception
+   * User wants to play.
+   * @param User $user
+   * @param TicTacToe $room
+   * @throws AssertionException When there aren't any seats left
    */
-  function createRoom(Event $request)
+  public function play(User $user, TicTacToe $room)
   {
-    // TODO: authorization
-    // TODO: we need a random name-maker, to reduce confusion with Unique::makeId()
-    $room = $this->makeAndJoinRoom($request->socket, self::makeId());
-
-    $request->callback($room->getName());
-
-    // TODO: "someone" should be user's name
-    $this->in($room)->send("Someone created {$room}.");
+    $room->addPlayer($user);
   }
 
   /**
+   * User places their Mark on the board.
    * @param Event $request
-   * @param $roomName
-   * @throws \Beebo\Exceptions\RoomDoesNotExistException
+   * @param User $user
+   * @param TicTacToe $room
+   * @param $space
+   * @throws AssertionException
    */
-  function joinRoom(Event $request, $roomName)
+  public function mark(User $user, TicTacToe $room, $space)
   {
-    // TODO: authorization
-    $room = $this->join($request->socket, $roomName);
-
-    // TODO: "someone" should be user's name
-    $this->in($roomName)->send("Someone joined {$room}.");
+    $room->assertMyTurn($user)->mark($user, $space);
   }
-
-  /**
-   * @param Event $request
-   * @param $roomId
-   */
-  function leaveRoom(Event $request, $roomId)
-  {
-    if ($room = $this->leave($request->socket, $roomId)) {
-      // TODO: "someone" should be user's name
-      $this->in($room)->send("Someone left {$room}.");
-    }
-  }
-
 }

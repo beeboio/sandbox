@@ -3,6 +3,7 @@ namespace Beebo\SocketIO;
 
 use Beebo\Concerns\Unique;
 use Illuminate\Support\Arr;
+use Illuminate\Foundation\Auth\User as Authenticatable;;
 
 /**
  * Simple wrapper for Socket.IO events (messages) data.
@@ -140,6 +141,14 @@ class Event
   function canceled()
   {
     return $this->canceled;
+  }
+
+  /**
+   * @return Authenticatable
+   */
+  function user()
+  {
+    return $this->socket->user();
   }
 
 }

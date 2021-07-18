@@ -91,6 +91,15 @@ trait Listens
 
   /**
    * @param $listener
+   * @return $this;
+   */
+  function offAny($listener)
+  {
+    return $this->off(EventHandler::make($listener, null));
+  }
+
+  /**
+   * @param $listener
    * @return $this
    */
   function prependAny($listener)

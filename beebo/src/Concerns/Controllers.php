@@ -2,6 +2,10 @@
 namespace Beebo\Concerns;
 
 use Log;
+use Beebo\Exceptions\RoomDoesNotExistException;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Beebo\SocketIO\Room;
+use Illuminate\Database\Eloquent\Model;
 use Beebo\Contracts\ControlsSockets;
 use Illuminate\Support\Collection;
 use Beebo\Contracts\Messenger;
@@ -36,9 +40,12 @@ trait Controllers
   protected function initializeControllers()
   {
     $this->bootedControllers = collect($this->controllers ?? [])
-      ->map(function($class) {
-        // TODO make sure $class implements ControlsSockets
-        return app($class)->_setServer($this);
+      ->mapToAssoc(function($class) {
+        $controller = app($class)->_setServer($this);
+        if (!$controller instanceof ControlsSockets) {
+          throw new \Exception("All Socket controllers must implement " . ControlsSockets::class);
+        }
+        return [$controller->_getName(), $controller];
       });
 
     $this->on('event', function(Event $event, ...$data) {
@@ -80,25 +87,22 @@ trait Controllers
    * @param Event $event
    * @param mixed ...$data
    * @throws ControllerHandlerNotFound
+   * @throws \Exception
    */
   protected function tryToRouteEvent(Event $event, ...$data)
   {
     // TODO: look into other ways (maybe faster) of making this safer
     $route = explode('.', preg_replace('/[^\w\.]/', '', $event->name));
     $namespace = trim($route[0] ?? null);
-    $method = trim($route[1] ?? null);
+    $methodName = trim($route[1] ?? null);
 
-    if ($namespace && $method) {
-      $controller = $this->bootedControllers
-        ->filter(function(ControlsSockets $controller) use ($namespace, $method) {
-          return
-            $controller->_getName() === $namespace
-            && $controller->_getPublicMethods()->contains($method);
-        })
-        ->first();
-
-      if ($controller) {
-        $response = $controller->$method($event, ...$data);
+    if ($namespace && $methodName) {
+      $method = null;
+      if ($controller = data_get($this->bootedControllers, $namespace)) {
+        $method = $controller->_getPublicMethods()->get($methodName);
+      }
+      if ($method) {
+        $response = $this->routeToControllerMethod($event, $controller, $method, $event, ...$data);
         if ($event->hasCallback()) {
           $event->callback($response);
         }
@@ -122,6 +126,53 @@ trait Controllers
     } else {
       throw new ControllerHandlerNotFound($event->name);
     }
+  }
+
+  /**
+   * @param Event $request
+   * @param ControlsSockets $controller
+   * @param \ReflectionMethod $method
+   * @param Event $event
+   * @param mixed ...$data
+   * @return mixed
+   */
+  protected function routeToControllerMethod(Event $request, ControlsSockets $controller, \ReflectionMethod $method, $event, ...$data)
+  {
+    $args = collect($method->getParameters())->map(function(\ReflectionParameter $p, $i) use ($controller, $method, $request, &$data) {
+      // use type hints to map in parameters
+      if ($class = $p->getClass()) {
+        // look for Event class, pass in $request
+        if ($class->getName() === Event::class) {
+          return $request;
+        // look for Room class and subclasses, expect $roomName, lookup Room instance
+        } else if ($class->isSubclassOf(Room::class) || $class->getName() === Room::class) {
+          if (count($data) < 1) {
+            throw new \InvalidArgumentException("Argument #{$i} for {$controller->_getName()}.{$method->getName()} is required.");
+          }
+          $roomName = array_shift($data);
+          if (!$this->hasRoom($roomName)) {
+            throw new RoomDoesNotExistException($roomName);
+          }
+          return $this->rooms()->get($roomName);
+        // look for User models
+        } else if ($class->isSubclassOf(Authenticatable::class)) {
+          return $request->user();
+        // look for Eloquent models
+        } else if ($class->isSubclassOf(Model::class)) {
+          // TODO: findOrFail
+        }
+      }
+      // if we couldn't use type-hinting, and $data is empty, throw an error
+      if (count($data) < 1) {
+        throw new \InvalidArgumentException("Argument ${$i} for {$controller->_getName()}.{$method->getName()} is required: " . $p->getName());
+      }
+      // otherwise, just map in the next input
+      return array_shift($data);
+    });
+
+    $methodName = $method->getName();
+
+    return $controller->$methodName(...$args);
   }
 
 }
