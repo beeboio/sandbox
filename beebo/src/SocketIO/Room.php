@@ -10,28 +10,33 @@ class Room implements Arrayable
 {
   use Bootable, Unique;
 
-  protected $name;
+  protected $_name;
 
-  protected $server;
+  protected $_server;
 
-  protected $id;
+  protected $_id;
+
+  /**
+   * @var int Default capacity is 10,000 connections
+   */
+  protected $_capacity = 10000;
 
   /**
    * @var Collection<Socket>
    */
-  protected $sockets;
+  protected $_sockets;
 
-  private function __construct()
+  public function __construct()
   {
     // TODO: setup interval to check room membership and dispose
 
-    $this->sockets = collect([]);
+    $this->_sockets = collect([]);
 
     $this->bootIfNotBooted();
 
     $this->initializeTraits();
 
-    $this->id = self::makeId();
+    $this->_id = self::makeId();
   }
 
   /**
@@ -39,7 +44,47 @@ class Room implements Arrayable
    */
   public function getId()
   {
-    return $this->id;
+    return $this->_id;
+  }
+
+
+  /**
+   * Do something later
+   * @param \Closure $closure
+   * @return $this
+   */
+  public function later(\Closure $closure)
+  {
+    // TODO: dispatch to the home server
+
+    return $this;
+  }
+
+  /**
+   * @param $_capacity
+   * @return $this
+   */
+  public function setCapacity($_capacity)
+  {
+    $this->_capacity = $_capacity;
+    return $this;
+  }
+
+  /**
+   * @return int
+   */
+  public function getCapacity()
+  {
+    return $this->_capacity;
+  }
+
+  /**
+   * @return bool
+   */
+  public function isFull()
+  {
+    // TODO: filter sockets to only connected ones, allowing for latent cleanup
+    return $this->_sockets->count() >= $this->_capacity;
   }
 
   /**
@@ -56,8 +101,8 @@ class Room implements Arrayable
       throw new \InvalidArgumentException("{$roomClass} is not a " . get_called_class());
     }
 
-    $room->name = $name;
-    $room->server = $server;
+    $room->_name = $name;
+    $room->_server = $server;
 
     return $room;
   }
@@ -67,15 +112,24 @@ class Room implements Arrayable
    */
   function getSockets()
   {
-    return $this->sockets;
+    return $this->_sockets;
   }
 
   /**
-   *
+   * @param $eventName
+   * @param mixed ...$data
+   */
+  function emit($eventName, ...$data)
+  {
+    $this->getSockets()->each->emit($eventName, ...$data);
+  }
+
+  /**
+   * @return string
    */
   function getName()
   {
-    return $this->name;
+    return $this->_name;
   }
 
   /**
@@ -84,7 +138,7 @@ class Room implements Arrayable
    */
   public final function join(Socket $socket)
   {
-    $this->sockets[$socket->getId()] = $socket;
+    $this->_sockets[$socket->getId()] = $socket;
     $socket->handleJoin($this);
     return $this;
   }
@@ -95,7 +149,7 @@ class Room implements Arrayable
    */
   public final function leave(Socket $socket)
   {
-    $this->sockets->forget($socket->getId());
+    $this->_sockets->forget($socket->getId());
     $socket->handleLeave($this);
     return $this;
   }
@@ -105,7 +159,7 @@ class Room implements Arrayable
    */
   public function __toString()
   {
-    return "{$this->getName()}#{$this->getId()}";
+    return "\"{$this->getName()}\"#{$this->getId()}";
   }
 
   /**

@@ -20,6 +20,17 @@ trait Bootable
   protected static $traitInitializers = [];
 
   /**
+   * Test the attached object to see if it using the given Trait
+   * @param string|mixed $object
+   * @param string $trait
+   * @return bool
+   */
+  public function uses($trait)
+  {
+    return in_array($trait, class_uses(get_class($this)));
+  }
+
+  /**
    * Check if the model needs to be booted and if so, do it.
    *
    * @return void
