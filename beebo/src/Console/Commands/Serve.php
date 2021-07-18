@@ -8,7 +8,7 @@ use BeyondCode\LaravelWebSockets\Server\WebSocketServerFactory;
 
 class Serve extends StartWebSocketServer
 {
-  protected $signature = 'beebo:serve {--host=0.0.0.0} {--port=} {--debug : Forces the loggers to be enabled and thereby overriding the app.debug config setting } ';
+  protected $signature = 'beebo:serve {--host=} {--port=} {--debug : Forces the loggers to be enabled and thereby overriding the app.debug config setting } ';
 
   protected $description = 'Start the Beebo Server';
 
@@ -25,6 +25,8 @@ class Serve extends StartWebSocketServer
 
   protected function startWebSocketServer()
   {
+      $host = $this->option('host') ?: env('LARAVEL_WEBSOCKETS_HOST', '0.0.0.0');
+
       $port = $this->option('port') ?: env('LARAVEL_WEBSOCKETS_PORT');
 
       $this->info("Starting the Beebo server on port {$port}...");
@@ -35,7 +37,7 @@ class Serve extends StartWebSocketServer
       (new WebSocketServerFactory())
           ->setLoop($this->loop)
           ->useRoutes($routes)
-          ->setHost($this->option('host'))
+          ->setHost($host)
           ->setPort($port)
           ->setConsoleOutput($this->output)
           ->createServer()
