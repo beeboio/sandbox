@@ -3,10 +3,12 @@ namespace Beebo\Console\Commands;
 
 use Beebo\SocketIO\Server;
 use BeyondCode\LaravelWebSockets\Console\StartWebSocketServer;
+use BeyondCode\LaravelWebSockets\Facades\WebSocketsRouter;
+use BeyondCode\LaravelWebSockets\Server\WebSocketServerFactory;
 
 class Serve extends StartWebSocketServer
 {
-  protected $signature = 'beebo:serve {--host=0.0.0.0} {--port=6001} {--debug : Forces the loggers to be enabled and thereby overriding the app.debug config setting } ';
+  protected $signature = 'beebo:serve {--host=0.0.0.0} {--port=} {--debug : Forces the loggers to be enabled and thereby overriding the app.debug config setting } ';
 
   protected $description = 'Start the Beebo Server';
 
@@ -19,5 +21,24 @@ class Serve extends StartWebSocketServer
       // so that they can create their own keep-alives and other
       // important intervals
       $this->loop = Server::loop();
+  }
+
+  protected function startWebSocketServer()
+  {
+      $port = $this->option('port') ?: env('LARAVEL_WEBSOCKETS_PORT');
+
+      $this->info("Starting the Beebo server on port {$port}...");
+
+      $routes = WebSocketsRouter::getRoutes();
+
+      /* 🛰 Start the server 🛰  */
+      (new WebSocketServerFactory())
+          ->setLoop($this->loop)
+          ->useRoutes($routes)
+          ->setHost($this->option('host'))
+          ->setPort($port)
+          ->setConsoleOutput($this->output)
+          ->createServer()
+          ->run();
   }
 }
