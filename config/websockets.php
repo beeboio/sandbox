@@ -50,6 +50,8 @@ return [
             'dns' => env('BEEBO_PUBSUB_DNS', '127.0.0.1'),
             'tls' => [
                 'verify_peer' => env('BEEBO_PUBSUB_TLS_VERIFY_PEER', true),
+                'verify_peer_name' => env('BEEBO_PUBSUB_TLS_VERIFY_PEER_NAME', true),
+                'allow_self_signed' => env('BEEBO_PUBSUB_TLS_ALLOW_SELF_SIGNED', false),
             ],
         ]
     ],
@@ -144,7 +146,11 @@ return [
          */
         'local_pk' => env('LARAVEL_WEBSOCKETS_SSL_LOCAL_PK', null),
 
-        'verify_peer' => false,
+        'verify_peer' => env('LARAVEL_WEBSOCKETS_VERIFY_PEER', true),
+
+        'verify_peer_name' => env('LARAVEL_WEBSOCKETS_VERIFY_PEER_NAME', true),
+
+        'allow_self_signed' => env('LARAVEL_WEBSOCKETS_ALLOW_SELF_SIGNED', false),
 
         /*
          * Passphrase for your local_cert file.

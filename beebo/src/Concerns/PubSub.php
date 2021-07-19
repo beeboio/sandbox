@@ -49,12 +49,16 @@ trait PubSub
       $host = Url::fromString(Routes::to('/'))->getHost();
     }
 
+    if (is_null($secure = config('websockets.pubsub.secure'))) {
+      $secure = Url::fromString(Routes::to('/'))->getScheme() === 'https';
+    }
+
     if (!$port = config('websockets.pubsub.port')) {
       $port = config('websockets.dashboard.port');
     }
 
     $pubSubUrl = (new Url())
-      ->withScheme('https')
+      ->withScheme($secure ? 'https' : 'http')
       ->withHost($host)
       ->withPath("/app/{$appKey}")
       ->withPort($port)
@@ -67,14 +71,13 @@ trait PubSub
 
     $client = new Client(Server::loop(), new Socket(Server::loop(), $options));
 
-    $client(str_replace('https://', 'wss://', (string) $pubSubUrl))
+    $client(str_replace(['http://', 'https://'], ['ws://', 'wss://'], (string) $pubSubUrl))
       ->then(function(Connection $conn) {
         $this->network->setConnection($conn);
       }, function(\Exception $e){
         Log::error($e);
-
-        // TODO: implement some sort of retry loop
-        throw $e;
+        // figure out how to get a Console logger here:
+        dd($e);
       });
   }
 

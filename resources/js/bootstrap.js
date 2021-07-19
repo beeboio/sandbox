@@ -13,7 +13,7 @@ window.Echo = new Echo({
   broadcaster: 'pusher',
   key: process.env.MIX_PUSHER_APP_KEY,
   cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-  wsHost: window.location.hostname,
+  wsHost: process.env.MIX_LARAVEL_WEBSOCKETS_HOST || window.location.hostname,
   wsPort: process.env.MIX_LARAVEL_WEBSOCKETS_PORT,
   wssPort: process.env.MIX_LARAVEL_WEBSOCKETS_PORT,
   forceTLS: false,
